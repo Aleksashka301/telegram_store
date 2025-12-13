@@ -40,6 +40,7 @@ pip-delete-this-directory.txt
 htmlcov/
 .tox/
 .nox/
+.idea
 .coverage
 .coverage.*
 .cache
@@ -179,3 +180,4 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+/img
