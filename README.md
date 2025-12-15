@@ -64,9 +64,11 @@ yarn develop
 ```
 После запуска не закрывайте терминал. При первом запуске потребуется регистрация. Ознакомиться со strapi можно 
 telegram_store -> README.md, [сайт](https://docs.strapi.io/), [GitHub](https://github.com/strapi/documentation)
+Зайти в админ панель можно по адресу http://localhost:1337/admin
 
 ### Запуск
 Запуск бота из корня проекта
 ```python
 python main.py
 ```
+
