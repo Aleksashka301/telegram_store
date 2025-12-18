@@ -53,22 +53,11 @@ npm install --global yarn
 yarn --version
 ```
 
-### Strapi
-Нужно перейти в папку со strapi
-```commandline
-cd telegram_store
-```
-Запуск
-```commandline
-yarn develop
-```
-После запуска не закрывайте терминал. При первом запуске потребуется регистрация. Ознакомиться со strapi можно 
-telegram_store -> README.md, [сайт](https://docs.strapi.io/), [GitHub](https://github.com/strapi/documentation)
-Зайти в админ панель можно по адресу http://localhost:1337/admin
-
 ### Запуск
+По умолчанию backend находится на `http://localhost:1337/`, но можно при запуске указать рабочий `url`.
+
 Запуск бота из корня проекта
 ```python
-python main.py
+python main.py <url>
 ```
 
