@@ -2,11 +2,13 @@ import requests
 from io import BytesIO
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
-from config import OrderStages
+from bot_states import OrderStages
 
 
 def get_product_info(update: Update, context: CallbackContext):
+	url = context.bot_data.get('url')
 	products = context.bot_data.get('products')
+
 	keyboard = [
 		[InlineKeyboardButton('Добавить в корзину', callback_data='add_to_card')],
 		[InlineKeyboardButton('Корзина', callback_data='cart')],
@@ -21,8 +23,7 @@ def get_product_info(update: Update, context: CallbackContext):
 		select_product_id = query.data.split('_')[1]
 		if int(select_product_id) == int(product['id']):
 			context.user_data['selected_product_id'] = product['id']
-			url = f'http://localhost:1337{product["picture"]["url"]}'
-			response = requests.get(url)
+			response = requests.get(f'{url}{product["picture"]["url"]}')
 			response.raise_for_status()
 
 			with BytesIO(response.content) as image:
@@ -61,6 +62,7 @@ def get_weight(update: Update, context: CallbackContext):
 
 
 def add_to_card_product(update: Update, context: CallbackContext):
+	url = context.bot_data.get('url')
 	query = update.callback_query
 	query.answer()
 
@@ -86,7 +88,7 @@ def add_to_card_product(update: Update, context: CallbackContext):
 					}
 				}
 			}
-			response = requests.post('http://localhost:1337/api/cart-products', json=data)
+			response = requests.post(f'{url}/api/cart-products', json=data)
 			response.raise_for_status()
 			context.user_data['cart_product'] = response.json()['data']
 
@@ -101,8 +103,12 @@ def add_to_card_product(update: Update, context: CallbackContext):
 
 
 def add_to_cart(update: Update, context: CallbackContext):
-	response = requests.get('http://localhost:1337/api/carts?populate=*')
+	url = context.bot_data.get('url')
+	params = context.bot_data.get('url_params')
+
+	response = requests.get(f'{url}/api/carts', params=params)
 	response.raise_for_status()
+
 	carts = response.json()['data']
 	cart_product = context.user_data.get('cart_product')
 
@@ -117,8 +123,10 @@ def add_to_cart(update: Update, context: CallbackContext):
 
 	for cart in carts:
 		if cart['tg_id'] == str(update.effective_chat.id):
-			requests.put(f'http://localhost:1337/api/carts/{cart["documentId"]}', json=data)
+			response = requests.put(f'{url}/api/carts/{cart["documentId"]}', json=data)
+			response.raise_for_status()
 			return OrderStages.ADDITION
 
-	requests.post('http://localhost:1337/api/carts', json=data)
+	response = requests.post(f'{url}/api/carts', json=data)
+	response.raise_for_status()
 	return OrderStages.ADDITION
