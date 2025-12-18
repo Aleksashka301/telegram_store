@@ -1,7 +1,7 @@
 import requests
 from telegram import Update
 from telegram.ext import CallbackContext
-from config import OrderStages
+from bot_states import OrderStages
 
 
 def start_payment(update: Update, context: CallbackContext):
@@ -22,7 +22,10 @@ def get_buyers_details(update: Update, context: CallbackContext):
 
 
 def end_payment(update: Update, context: CallbackContext):
-	response = requests.get('http://localhost:1337/api/carts?populate=*')
+	url = context.bot_data.get('url')
+	params = context.bot_data.get('url_params')
+
+	response = requests.get(f'{url}/api/carts', params=params)
 	response.raise_for_status()
 	carts = response.json()['data']
 
@@ -45,6 +48,8 @@ def end_payment(update: Update, context: CallbackContext):
 				}
 			}
 
-			requests.post('http://localhost:1337/api/buyers', json=data)
+			response = requests.post(f'{url}/api/buyers', json=data)
+			response.raise_for_status()
+
 			update.message.reply_text(f'{user_name}, Ваш заказ оформлен!')
 			return OrderStages.BUYER
