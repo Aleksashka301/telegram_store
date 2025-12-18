@@ -1,11 +1,11 @@
 import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
-from config import OrderStages
+from bot_states import OrderStages
 
 
-def get_cart(tg_id):
-	response = requests.get('http://localhost:1337/api/carts?populate=*')
+def get_cart(tg_id, url, params):
+	response = requests.get(f'{url}/api/carts', params=params)
 	response.raise_for_status()
 	carts = response.json()['data']
 
@@ -18,7 +18,7 @@ def get_cart(tg_id):
 			break
 
 	if user_cart and user_cart['cart_products']:
-		response = requests.get('http://localhost:1337/api/cart-products?populate=*')
+		response = requests.get(f'{url}/api/cart-products', params=params)
 		response.raise_for_status()
 		cart_products = response.json()['data']
 
@@ -53,8 +53,11 @@ def get_cart(tg_id):
 
 
 def show_cart(update: Update, context: CallbackContext):
+	url = context.bot_data.get('url')
+	params = context.bot_data.get('url_params')
+
 	tg_id = str(update.effective_chat.id)
-	orders, reply_markup = get_cart(tg_id)
+	orders, reply_markup = get_cart(tg_id, url, params)
 
 	if orders:
 		query = update.callback_query
@@ -76,14 +79,18 @@ def show_cart(update: Update, context: CallbackContext):
 
 
 def remove_product_cart(update: Update, context: CallbackContext):
+	url = context.bot_data.get('url')
+	params = context.bot_data.get('url_params')
+
 	query = update.callback_query
 	query.answer()
 
 	product_document_id = query.data.split('_')[1]
-	requests.delete(f'http://localhost:1337/api/cart-products/{product_document_id}')
+	response = requests.delete(f'{url}/api/cart-products/{product_document_id}')
+	response.raise_for_status()
 
 	tg_id = str(update.effective_chat.id)
-	orders, reply_markup = get_cart(tg_id)
+	orders, reply_markup = get_cart(tg_id, url, params)
 
 	context.bot.send_message(
 		chat_id=update.effective_chat.id,
