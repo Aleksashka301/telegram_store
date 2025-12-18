@@ -1,6 +1,6 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
-from config import OrderStages
+from bot_states import OrderStages
 
 
 def start(update: Update, context: CallbackContext):
