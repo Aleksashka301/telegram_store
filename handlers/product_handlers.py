@@ -79,7 +79,7 @@ def add_to_card_product(update: Update, context: CallbackContext):
 	for product in products:
 		if product['id'] == product_id:
 			cost = weight / 1000 * int(product["price"])
-			data = {
+			product_card = {
 				'data': {
 					'amount': weight,
 					'cost': cost,
@@ -88,7 +88,7 @@ def add_to_card_product(update: Update, context: CallbackContext):
 					}
 				}
 			}
-			response = requests.post(f'{url}/api/cart-products', json=data)
+			response = requests.post(f'{url}/api/cart-products', json=product_card)
 			response.raise_for_status()
 			context.user_data['cart_product'] = response.json()['data']
 
@@ -112,7 +112,7 @@ def add_to_cart(update: Update, context: CallbackContext):
 	carts = response.json()['data']
 	cart_product = context.user_data.get('cart_product')
 
-	data = {
+	update_cart_data = {
 		'data': {
 			'tg_id': str(update.effective_chat.id),
 			'cart_products': {
@@ -123,10 +123,10 @@ def add_to_cart(update: Update, context: CallbackContext):
 
 	for cart in carts:
 		if cart['tg_id'] == str(update.effective_chat.id):
-			response = requests.put(f'{url}/api/carts/{cart["documentId"]}', json=data)
+			response = requests.put(f'{url}/api/carts/{cart["documentId"]}', json=update_cart_data)
 			response.raise_for_status()
 			return OrderStages.ADDITION
 
-	response = requests.post(f'{url}/api/carts', json=data)
+	response = requests.post(f'{url}/api/carts', json=update_cart_data)
 	response.raise_for_status()
 	return OrderStages.ADDITION
