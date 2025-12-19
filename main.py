@@ -1,6 +1,4 @@
-import argparse
 import requests
-
 from environs import Env
 from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandler, Filters, MessageHandler, Updater
 
@@ -12,20 +10,11 @@ from handlers.start_handlers import start
 
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser()
-	parser.add_argument(
-		'url',
-		help='url на котором размещён strapi',
-		nargs='?',
-		default='http://localhost:1337',
-	)
-	args = parser.parse_args()
-	url = args.url
-	params = {'populate': '*'}
-
 	env = Env()
 	env.read_env()
 	telegram_token = env.str('TELEGRAM_TOKEN')
+	url = env.str('URL', default='http://localhost:1337')
+	params = {'populate': '*'}
 
 	response = requests.get(f'{url}/api/products', params=params)
 	response.raise_for_status()
