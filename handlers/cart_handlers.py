@@ -4,8 +4,8 @@ from telegram.ext import CallbackContext
 from bot_states import OrderStages
 
 
-def get_cart(tg_id, url, params):
-	response = requests.get(f'{url}/api/carts', params=params)
+def get_cart(tg_id, url, populate, include):
+	response = requests.get(f'{url}/api/carts', params={populate: include})
 	response.raise_for_status()
 	carts = response.json()['data']
 
@@ -18,7 +18,7 @@ def get_cart(tg_id, url, params):
 			break
 
 	if user_cart and user_cart['cart_products']:
-		response = requests.get(f'{url}/api/cart-products', params=params)
+		response = requests.get(f'{url}/api/cart-products', params={populate: include})
 		response.raise_for_status()
 		cart_products = response.json()['data']
 
@@ -56,8 +56,12 @@ def show_cart(update: Update, context: CallbackContext):
 	url = context.bot_data.get('url')
 	params = context.bot_data.get('url_params')
 
+	for key, value in params.items():
+		populate = key
+		include = value
+
 	tg_id = str(update.effective_chat.id)
-	orders, reply_markup = get_cart(tg_id, url, params)
+	orders, reply_markup = get_cart(tg_id, url, populate, include)
 
 	if orders:
 		query = update.callback_query
@@ -72,7 +76,7 @@ def show_cart(update: Update, context: CallbackContext):
 	else:
 		context.bot.send_message(
 			chat_id=update.effective_chat.id,
-			text='Корзина пуста, вы можете добавить туда товары из меню',
+			text='Корзина пуста, вы можете добавить туда продукты из меню',
 			reply_markup=reply_markup
 		)
 		return OrderStages.CART
@@ -82,6 +86,10 @@ def remove_product_cart(update: Update, context: CallbackContext):
 	url = context.bot_data.get('url')
 	params = context.bot_data.get('url_params')
 
+	for key, value in params.items():
+		populate = key
+		include = value
+
 	query = update.callback_query
 	query.answer()
 
@@ -90,7 +98,7 @@ def remove_product_cart(update: Update, context: CallbackContext):
 	response.raise_for_status()
 
 	tg_id = str(update.effective_chat.id)
-	orders, reply_markup = get_cart(tg_id, url, params)
+	orders, reply_markup = get_cart(tg_id, url, populate, include)
 
 	context.bot.send_message(
 		chat_id=update.effective_chat.id,
